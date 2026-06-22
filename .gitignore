@@ -1,0 +1,30 @@
+# Exclude heavy directories
+/demo/
+/linux-4.19.238/
+/ncnn/
+/sdboot/
+/sdroot/
+/u-boot/
+/vm_status/
+
+# Exclude large files
+/core-image-minimal-qemuarm64.rootfs.tar.bz2
+/linux-4.19.238.tar.gz
+/virtio-sd.img
+
+# Common build/temp files
+*.o
+*.ko
+*.mod
+*.mod.c
+*.cmd
+*.tmp
+*.log
+*.swp
+*.swo
+.DS_Store
+__pycache__/
+.vscode/
+*.img
+*.qcow2
+*.raw

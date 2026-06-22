@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# VM2 console에 stdin/stdout/stderr를 강제로 연결
+exec </dev/console >/dev/console 2>&1
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+echo ""
+echo "======================================"
+echo "[VM2 TEST] /init started"
+echo "======================================"
+
+echo "[VM2 TEST] mount proc/sys/devtmpfs"
+
+mount -t proc proc /proc 2>/dev/null || echo "[VM2 TEST] proc mount failed"
+mount -t sysfs sysfs /sys 2>/dev/null || echo "[VM2 TEST] sysfs mount failed"
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || echo "[VM2 TEST] devtmpfs mount failed"
+
+echo ""
+echo "[VM2 TEST] cmdline:"
+cat /proc/cmdline 2>/dev/null || echo "[VM2 TEST] cannot read /proc/cmdline"
+
+echo ""
+echo "[VM2 TEST] block devices:"
+cat /proc/partitions 2>/dev/null || echo "[VM2 TEST] cannot read /proc/partitions"
+
+echo ""
+echo "[VM2 TEST] /dev/vd*:"
+ls -l /dev/vd* 2>/dev/null || echo "[VM2 TEST] no /dev/vd*"
+
+echo ""
+echo "[VM2 TEST] mounts:"
+cat /proc/mounts 2>/dev/null || echo "[VM2 TEST] cannot read /proc/mounts"
+
+echo ""
+echo "[VM2 TEST] SUCCESS: VM2 reached /init"
+echo "[VM2 TEST] entering shell"
+echo "======================================"
+
+exec /bin/sh -i
