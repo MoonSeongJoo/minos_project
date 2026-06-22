@@ -28,3 +28,21 @@ __pycache__/
 *.img
 *.qcow2
 *.raw
+
+# Raspberry Pi 4 bring-up additional artifacts
+/outputs/
+/minos-misc/
+/linux-rpi-4.19.238/
+/rpi4_sdboot/
+/rpi4_sdroot/
+/rpi4_artifacts/
+
+# Generated Raspberry Pi boot artifacts
+/minos/minos.bin
+/minos/minos.dtb
+/u-boot/u-boot.bin
+*.dtb
+*.dtbo
+*.bin
+*.elf
+*.map
