@@ -101,3 +101,5 @@ ai_model_vm2/udp_rtt_client
 
 # AI weights (keep metadata and labels)
 ai_model_vm2/model/*.bin
+# Local handover README
+/README.md
