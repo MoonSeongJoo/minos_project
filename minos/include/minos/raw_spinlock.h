@@ -61,7 +61,7 @@ static void inline raw_spin_unlock(spinlock_t *lock)
 
 }
 
-static void inline raw_spin_trylock(spinlock_t *lock)
+static int inline raw_spin_trylock(spinlock_t *lock)
 {
 	return 1;
 }

@@ -321,7 +321,23 @@ int aarch64_hypercall_handler(gp_regs *reg, int ec, uint32_t esr_value)
 {
 	struct vcpu *vcpu = get_current_vcpu();
 	struct arm_virt_data *arm_data = vcpu->vm->arch_data;
+	
+	// /*New start*/
+	// static int hvc_trace_count;
 
+    // if (hvc_trace_count++ < 200) {
+    //     pr_notice("GENERIC_HVC_TRACE: vm%d vcpu%d ec=0x%x esr=0x%x pc=0x%lx x0=0x%lx x1=0x%lx x2=0x%lx\n",
+    //               vcpu->vm->vmid,
+    //               get_vcpu_id(vcpu),
+    //               ec,
+    //               esr_value,
+    //               reg->pc,
+    //               reg->x0,
+    //               reg->x1,
+    //               reg->x2);
+    // }
+	// /*New end*/
+	
 	if (arm_data->hvc_handler)
 		return arm_data->hvc_handler(vcpu, reg, read_esr_el2());
 	else
@@ -402,6 +418,25 @@ void handle_vcpu_sync_exception(gp_regs *regs)
 
 	esr_value = read_esr_el2();
 	ec_type = (esr_value & ESR_ELx_EC_MASK) >> ESR_ELx_EC_SHIFT;
+
+	// /*New start*/
+	// {
+	// 	static int sync_trace_count;
+	
+	// 	if (sync_trace_count++ < 300) {
+	// 		pr_notice("GUEST_SYNC_TRACE: vm%d vcpu%d pc=0x%lx esr=0x%x ec=0x%x pstate=0x%lx x0=0x%lx x1=0x%lx x2=0x%lx\n",
+	// 				  vcpu->vm->vmid,
+	// 				  get_vcpu_id(vcpu),
+	// 				  regs->pc,
+	// 				  esr_value,
+	// 				  ec_type,
+	// 				  regs->pstate,
+	// 				  regs->x0,
+	// 				  regs->x1,
+	// 				  regs->x2);
+	// 	}
+	// }
+	// /*New end*/
 
 	if (ec_type >= ESR_ELx_EC_MAX) {
 		pr_err("unknown sync exception type from guest %d\n", ec_type);

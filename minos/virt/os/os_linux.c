@@ -353,6 +353,42 @@ static inline void __linux_vcpu_startup(struct vcpu *vcpu, unsigned long entry)
 	}
 }
 
+// static inline void __linux_vcpu_startup(struct vcpu *vcpu, unsigned long entry)
+// {
+//     gp_regs *regs;
+
+//     arch_vcpu_init(vcpu, (void *)entry, NULL);
+//     regs = (gp_regs *)vcpu->task->stack_base;
+
+//     /* fill the dtb address to x0 */
+//     if (get_vcpu_id(vcpu) == 0) {
+//         if (!task_is_32bit(vcpu->task)) {
+//             regs->x0 = (uint64_t)vcpu->vm->setup_data;
+//         } else {
+//             regs->x0 = 0;
+//             regs->x1 = 2272;        /* arm vexpress machine type */
+//             regs->x2 = (uint64_t)vcpu->vm->setup_data;
+//         }
+//     } else {
+//         regs->x0 = 0;
+//         regs->x1 = 0;
+//         regs->x2 = 0;
+//         regs->x3 = 0;
+//     }
+
+//     pr_notice("LINUX_STARTUP_TRACE: vm%d vcpu%d entry=0x%lx pc=0x%lx x0=0x%lx x1=0x%lx x2=0x%lx x3=0x%lx 32bit=%d setup_data=0x%lx\n",
+//               vcpu->vm->vmid,
+//               get_vcpu_id(vcpu),
+//               entry,
+//               regs->pc,
+//               regs->x0,
+//               regs->x1,
+//               regs->x2,
+//               regs->x3,
+//               task_is_32bit(vcpu->task),
+//               vcpu->vm->setup_data);
+// }
+
 static void linux_vcpu_startup(struct vcpu *vcpu)
 {
 	__linux_vcpu_startup(vcpu, (unsigned long)vcpu->vm->entry_point);

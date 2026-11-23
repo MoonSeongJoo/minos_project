@@ -1,0 +1,218 @@
+/dts-v1/;
+
+/ {
+    compatible = "raspberrypi,4-model-b\0brcm,bcm2838\0brcm,bcm2837";
+    model = "Raspberry Pi 4 Model B";
+    interrupt-parent = <0x01>;
+    #address-cells = <0x02>;
+    #size-cells = <0x01>;
+
+    aliases {
+        serial0 = "/soc/serial@7e201000";
+        serial1 = "/soc/serial@7e215040";
+    };
+
+    chosen {
+        minos,stdout = "bcm283x_mu";
+        extra-memory = <0x40000000 0xbc000000>;
+        bootargs = "bootwait=5";
+    };
+
+    vms {
+        vm1 {
+            device_type = "virtual_machine";
+            vmid = <0x01>;
+            vm_name = "rpi4_linux_host";
+            type = "linux";
+            host_vm;
+            vm_32bit;
+            native_wfi;
+
+            vcpus = <0x01>;
+            vcpu_affinity = <0x00>;
+
+            entry = <0x00 0x00008000>;
+            setup_data = <0x00 0x03e00000>;
+
+            // memory = <0x00 0x00000000 0x00 0x30000000>;
+            memory = <0x00 0x00000000 0x00 0x20000000>;
+
+            // cmdline = "console=hvc0 earlycon=vm_debug_con,io,0x0 ignore_loglevel loglevel=9 consolelog=9 no_console_suspend keep_bootcon initcall_debug root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait rootflags=noload net.ifnames=0";
+            cmdline = "console=hvc0 earlycon=vm_debug_con,io,0x0 loglevel=7 no_console_suspend root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait rootflags=noload net.ifnames=0";
+            
+            vm1_bdi {
+                #address-cells = <0x01>;
+                #size-cells = <0x01>;
+
+                /*
+                * RPi4 built-in Ethernet GENET pass-through to VM1
+                *
+                * VM1 Linux DTS:
+                *   ethernet@7d580000 {
+                *       reg = <0x7d580000 0x10000>;
+                *       interrupts = <0x00 0x9d 0x04>,
+                *                    <0x00 0x9e 0x04>;
+                *   };
+                *
+                * soc.ranges translation:
+                *   guest bus addr 0x7d580000 -> CPU physical 0xfd580000
+                *
+                * MMIO:
+                *   guest physical = 0xfd580000
+                *   host physical  = 0xfd580000
+                *   size           = 0x10000
+                */
+                iomem = <0x00 0xfd580000 0x00 0xfd580000 0x00 0x00010000>;
+
+                /*
+                * GENET IRQ pass-through.
+                *
+                * Linux GIC interrupt spec:
+                *   <0x00 0x9d 0x04> => SPI 0x9d => hwirq 0x9d + 32 = 0xbd = 189
+                *   <0x00 0x9e 0x04> => SPI 0x9e => hwirq 0x9e + 32 = 0xbe = 190
+                *
+                * Minos virqs format:
+                *   <physical_irq virtual_irq>
+                */
+                virqs = <0xbd 0xbd>,
+                        <0xbe 0xbe>;
+
+                vm_console_vm1 {
+                    virtual_device;
+                    // vc-dynamic-res;
+                    compatible = "minos,vm_console";
+                    reg = <0x3f000000 0x2000>;
+                    interrupts = <0x00 0x00 0x04>;
+                };
+            };
+        };
+        
+        vm2 {
+            device_type = "virtual_machine";
+            vmid = <0x02>;
+            vm_name = "rpi4_linux_vm2_ai_stub";
+            type = "linux";
+            vm_32bit;
+            native_wfi;
+        
+            vcpus = <0x01>;
+            vcpu_affinity = <0x01>;
+        
+            // entry = <0x00 0x30008000>;
+            entry = <0x00 0x20008000>;
+            // setup_data = <0x00 0x33e00000>;
+            setup_data = <0x00 0x23e00000>;
+        
+            // memory = <0x00 0x30000000 0x00 0x07200000>;
+            memory = <0x00 0x20000000 0x00 0x10000000>;
+        
+            cmdline = "console=hvc0 earlycon=vm_debug_con,io,0x0 loglevel=7 no_console_suspend rdinit=/init";
+        
+            vm2_bdi {
+                #address-cells = <0x01>;
+                #size-cells = <0x01>;
+        
+                vtimer_irq = <27>;
+        
+                vm_console_vm2 {
+                    virtual_device;
+                    compatible = "minos,vm_console";
+                    reg = <0x3f020000 0x2000>;
+                    interrupts = <0x00 0x01 0x04>;
+                };
+            };
+        };
+
+        vmboxs {
+            vmbox_veth@0 {
+                compatible = "minos,veth";
+                vmbox-type = "veth";
+        
+                /*
+                 * VM1 = Guardian Linux
+                 * VM2 = AI Stub Linux
+                 */
+                vmbox-owner = <0x01 0x02>;
+        
+                vmbox-id = <0x3430 0xffff>;
+                vmbox-vqs = <2>;
+                vmbox-vrings = <16>;
+                vmbox-vring-size = <2048>;
+            };
+        };
+  
+    };
+
+    soc {
+        compatible = "simple-bus";
+        #address-cells = <0x01>;
+        #size-cells = <0x01>;
+        ranges = <0x7e000000 0x00 0xfe000000 0x1800000
+                  0x7c000000 0x00 0xfc000000 0x2000000
+                  0x40000000 0x00 0xff800000 0x800000>;
+        dma-ranges = <0xc0000000 0x00 0x00 0x3c000000>;
+
+        gic400@40041000 {
+            interrupt-controller;
+            #interrupt-cells = <0x03>;
+            compatible = "arm,gic-400";
+            reg = <0x40041000 0x1000
+                   0x40042000 0x2000
+                   0x40044000 0x2000
+                   0x40046000 0x2000>;
+            phandle = <0x01>;
+        };
+    };
+
+    timer {
+        compatible = "arm,armv7-timer";
+        interrupts = <0x01 0x0d 0xf08
+                      0x01 0x0e 0xf08
+                      0x01 0x0b 0xf08
+                      0x01 0x0a 0xf08>;
+        arm,cpu-registers-not-fw-configured;
+        always-on;
+    };
+
+    cpus {
+        #address-cells = <0x01>;
+        #size-cells = <0x00>;
+        enable-method = "brcm,bcm2836-smp";
+
+        cpu@0 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a72";
+            reg = <0x00>;
+            enable-method = "spin-table";
+            cpu-release-addr = <0x00 0xd8>;
+        };
+
+        cpu@1 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a72";
+            reg = <0x01>;
+            enable-method = "spin-table";
+            cpu-release-addr = <0x00 0xe0>;
+        };
+
+        cpu@2 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a72";
+            reg = <0x02>;
+            enable-method = "spin-table";
+            cpu-release-addr = <0x00 0xe8>;
+        };
+
+        cpu@3 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a72";
+            reg = <0x03>;
+            enable-method = "spin-table";
+            cpu-release-addr = <0x00 0xf0>;
+        };
+    };
+
+    memory {
+        device_type = "memory";
+    };
+};

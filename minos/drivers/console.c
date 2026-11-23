@@ -114,31 +114,95 @@ void console_puts(char *buf, int len)
 	puts(buf, len);
 }
 
+// int console_gets(char *buf, int max, uint32_t timeout)
+// {
+// 	uint32_t ridx, widx;
+// 	long i, copy;
+
+// 	do {
+// 		ridx = inbuf_ridx;
+// 		widx = inbuf_widx;
+// 		rmb();
+
+// 		ASSERT((widx - ridx) <= CONSOLE_INBUF_SIZE);
+// 		copy = widx - ridx > max ? max : widx - ridx;
+// 		if (copy > 0) {
+// 			for (i = 0; i < copy; i++)
+// 				buf[i] = console_inbuf[BUFIDX(ridx++)];
+// 			wmb();
+// 			inbuf_ridx = ridx;
+// 			break;
+// 		}
+
+// 		if (timeout > 0)
+// 			copy = sem_pend(&console_sem, timeout);
+// 		else
+// 			break;
+// 	} while (copy == 0);
+
+// 	return copy;
+// }
+
 int console_gets(char *buf, int max, uint32_t timeout)
 {
-	uint32_t ridx, widx;
-	long i, copy;
+    uint32_t ridx, widx;
+    uint32_t waited = 0;
+    uint32_t slice;
+    long i, copy;
+    char ch;
 
-	do {
-		ridx = inbuf_ridx;
-		widx = inbuf_widx;
-		rmb();
+    if (!buf || max <= 0)
+        return 0;
 
-		ASSERT((widx - ridx) <= CONSOLE_INBUF_SIZE);
-		copy = widx - ridx > max ? max : widx - ridx;
-		if (copy > 0) {
-			for (i = 0; i < copy; i++)
-				buf[i] = console_inbuf[BUFIDX(ridx++)];
-			wmb();
-			inbuf_ridx = ridx;
-			break;
-		}
+    for (;;) {
+        /*
+         * Fast path: characters already delivered by interrupt-driven
+         * console_recv(), for example PL011 RX interrupt path.
+         */
+        ridx = inbuf_ridx;
+        widx = inbuf_widx;
+        rmb();
 
-		if (timeout > 0)
-			copy = sem_pend(&console_sem, timeout);
-		else
-			break;
-	} while (copy == 0);
+        ASSERT((widx - ridx) <= CONSOLE_INBUF_SIZE);
+        copy = widx - ridx > max ? max : widx - ridx;
+        if (copy > 0) {
+            for (i = 0; i < copy; i++)
+                buf[i] = console_inbuf[BUFIDX(ridx++)];
+            wmb();
+            inbuf_ridx = ridx;
+            return copy;
+        }
 
-	return copy;
+        /*
+         * Polling fallback for consoles without RX interrupt support.
+         * RPi4 Mini UART driver can output logs, but it does not call
+         * console_recv() on RX. Without this polling path, bootwait and
+         * shell input never see typed characters.
+         */
+        ch = console_getc();
+        if (ch) {
+            buf[0] = ch;
+            return 1;
+        }
+
+        if (timeout == 0)
+            return 0;
+
+        /*
+         * Poll every 10 ms. 0xffffffff is used by callers as "forever".
+         */
+        slice = 10;
+
+        if (timeout != (uint32_t)-1) {
+            if (waited >= timeout)
+                return 0;
+
+            if ((timeout - waited) < slice)
+                slice = timeout - waited;
+
+            waited += slice;
+        }
+
+        sem_pend(&console_sem, slice);
+    }
 }

@@ -62,8 +62,30 @@ static inline int vcpu_is_offline(struct vcpu *vcpu)
 
 static void vcpu_online(struct vcpu *vcpu)
 {
-	ASSERT(vcpu_is_offline(vcpu));
+    ASSERT(vcpu_is_offline(vcpu));
+
+    pr_notice("VCPU_ONLINE_TRACE: vm%d vcpu%d task=%s prio=%d curcpu=%d aff=%d\n",
+		vcpu->vm->vmid,
+		get_vcpu_id(vcpu),
+		vcpu->task ? vcpu->task->name : "NULL",
+		vcpu->task ? vcpu->task->prio : -1,
+		smp_processor_id(),
+		vcpu->task ? vcpu->task->affinity : -1);
+
 	task_ready(vcpu->task, 0);
+
+    // /*
+    //  * 같은 pCPU에 올릴 vCPU이면 현재 shell_task가 직접 양보하게 한다.
+    //  * 다른 pCPU이면 target pCPU에 resched IPI를 보낸다.
+    //  */
+    // if (smp_processor_id() == vcpu_affinity(vcpu)) {
+    //     pr_notice("VCPU_ONLINE_TRACE: same pcpu, cond_resched\n");
+    //     cond_resched();
+    // } else {
+    //     pr_notice("VCPU_ONLINE_TRACE: remote pcpu, pcpu_resched(%d)\n",
+    //               vcpu_affinity(vcpu));
+    //     pcpu_resched(vcpu_affinity(vcpu));
+    // }
 }
 
 static int inline affinity_to_vcpuid(struct vm *vm, unsigned long affinity)
@@ -294,7 +316,26 @@ free_vcpu:
 static void vcpu_return_to_user(struct task *task, gp_regs *regs)
 {
 	struct vcpu *vcpu = (struct vcpu *)task->pdata;
+	
+	// /*New start*/
+	// static int guest_enter_trace_count;
+	// static unsigned long last_pc = ~0UL;
 
+    // if (guest_enter_trace_count < 5 || regs->pc != last_pc) {
+    //     pr_notice("GUEST_ENTER_TRACE: vm%d vcpu%d pc=0x%lx pstate=0x%lx x0=0x%lx x1=0x%lx x2=0x%lx mode=%d\n",
+    //               vcpu->vm->vmid,
+    //               get_vcpu_id(vcpu),
+    //               regs->pc,
+    //               regs->pstate,
+    //               regs->x0,
+    //               regs->x1,
+    //               regs->x2,
+    //               vcpu->mode);
+    //     guest_enter_trace_count++;
+    //     last_pc = regs->pc;
+    // }
+	// /*New end*/
+	
 	vcpu->mode = OUTSIDE_ROOT_MODE;
 	smp_wmb();
 
@@ -307,7 +348,26 @@ static void vcpu_return_to_user(struct task *task, gp_regs *regs)
 static void vcpu_exit_from_user(struct task *task, gp_regs *regs)
 {
 	struct vcpu *vcpu = (struct vcpu *)task->pdata;
+	
+	// /*New start*/
+    // static int guest_exit_trace_count;
+    // static unsigned long last_pc = ~0UL;
 
+    // if (guest_exit_trace_count < 5 || regs->pc != last_pc) {
+    //     pr_notice("GUEST_EXIT_TRACE: vm%d vcpu%d pc=0x%lx pstate=0x%lx x0=0x%lx x1=0x%lx x2=0x%lx mode=%d\n",
+    //               vcpu->vm->vmid,
+    //               get_vcpu_id(vcpu),
+    //               regs->pc,
+    //               regs->pstate,
+    //               regs->x0,
+    //               regs->x1,
+    //               regs->x2,
+    //               vcpu->mode);
+    //     guest_exit_trace_count++;
+    //     last_pc = regs->pc;
+    // }
+	// /*New end*/
+	
 	vcpu->mode = OUTSIDE_GUEST_MODE;
 	smp_wmb();
 

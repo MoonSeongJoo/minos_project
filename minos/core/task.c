@@ -380,3 +380,18 @@ struct task *create_vcpu_task(char *name, task_func_t func, int aff,
         return create_task(name, func, TASK_STACK_SIZE, OS_PRIO_VCPU, aff,
 			flags | VCPU_TASK_FLAG, vcpu);
 }
+
+// struct task *create_vcpu_task(char *name, task_func_t func, int aff,
+// 	unsigned long flags, void *vcpu)
+// {
+// #define VCPU_TASK_FLAG (TASK_FLAGS_VCPU | TASK_FLAGS_NO_AUTO_START)
+
+// 	/*
+// 	 * DEBUG:
+// 	 * RPi4 bring-up 단계에서 shell_task(OS_PRIO_SYSTEM)보다
+// 	 * vCPU task(OS_PRIO_VCPU)가 낮은 priority라 Ready 상태에 머무는지 확인한다.
+// 	 * 검증 후 원복 또는 별도 scheduler policy로 정리 필요.
+// 	 */
+// 	return create_task(name, func, TASK_STACK_SIZE, OS_PRIO_SYSTEM, aff,
+// 		flags | VCPU_TASK_FLAG, vcpu);
+// }

@@ -30,11 +30,29 @@
 #include <virt/vmcs.h>
 #include <virt/vm_pm.h>
 
+// void vcpu_dump(struct vcpu *vcpu, gp_regs *regs)
+// {
+// 	pr_fatal("!!!! VCPU%d of VM%d [%s] fault !!!!\n");
+// 	arch_dump_register(regs);
+// 	dump_vcpu_vmodule_state(vcpu);
+// }
+
 void vcpu_dump(struct vcpu *vcpu, gp_regs *regs)
 {
-	pr_fatal("!!!! VCPU%d of VM%d [%s] fault !!!!\n");
-	arch_dump_register(regs);
-	dump_vcpu_vmodule_state(vcpu);
+    struct vm *vm = NULL;
+
+    if (vcpu)
+        vm = vcpu->vm;
+
+    pr_fatal("!!!! VCPU%d of VM%d [%s] fault !!!!\n",
+             vcpu ? vcpu->vcpu_id : -1,
+             vm ? vm->vmid : -1,
+             vm ? vm->name : "NULL");
+
+    arch_dump_register(regs);
+
+    if (vcpu)
+        dump_vcpu_vmodule_state(vcpu);
 }
 
 void vcpu_fault(struct vcpu *vcpu, gp_regs *regs)

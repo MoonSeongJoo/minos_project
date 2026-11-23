@@ -46,3 +46,42 @@ __pycache__/
 *.bin
 *.elf
 *.map
+
+
+# =====================================
+# Minos / H-A-SEE - RPi4
+# =====================================
+
+# Third-party source trees
+tmp_rpi4/initramfs/vm2/busybox-1.36.*/
+linux-4.19.238/
+ncnn/
+
+# Generated VM2 rootfs and initramfs
+tmp_rpi4/initramfs/vm2/rootfs/
+tmp_rpi4/initramfs/vm2/*.cpio
+tmp_rpi4/initramfs/vm2/*.cpio.gz
+
+# Generated Device Tree files
+tmp_rpi4/dtb/*.dtb
+tmp_rpi4/dtb/*.img
+
+# Hypervisor build outputs
+minos/minos.bin
+minos/minos.elf
+minos/.config
+
+# Logs and release artifacts
+tmp_rpi4/logs/
+tmp_rpi4/release/
+backup/
+releases/
+*.log
+*.o
+*.a
+*.pyc
+__pycache__/
+
+# Local editor / environment files
+.env
+.env.*

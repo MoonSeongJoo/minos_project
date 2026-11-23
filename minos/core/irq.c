@@ -192,29 +192,68 @@ out:
 	spin_unlock(&irq_desc->lock);
 }
 
+// int do_irq_handler(void)
+// {
+// 	uint32_t irq;
+// 	struct irq_desc *irq_desc;
+// 	int cpuid = smp_processor_id();
+
+// 	while (1) {
+// 		irq = irq_chip->get_pending_irq();
+// 		if (irq >= BAD_IRQ)
+// 			return 0;
+
+// 		irq_desc = get_irq_desc_cpu(cpuid, irq);
+// 		if (unlikely(!irq_desc)) {
+// 			pr_err("irq is not actived %d\n", irq);
+// 			irq_chip->irq_eoi(irq);
+// 			irq_chip->irq_dir(irq);
+// 			continue;
+// 		}
+
+// 		do_handle_host_irq(cpuid, irq_desc);
+// 	}
+
+// 	return 0;
+// }
+
 int do_irq_handler(void)
 {
-	uint32_t irq;
-	struct irq_desc *irq_desc;
-	int cpuid = smp_processor_id();
+    uint32_t irq;
+    struct irq_desc *irq_desc;
+    int cpuid = smp_processor_id();
+    static int irq_source_trace_count;
 
-	while (1) {
-		irq = irq_chip->get_pending_irq();
-		if (irq >= BAD_IRQ)
-			return 0;
+    while (1) {
+        irq = irq_chip->get_pending_irq();
+        if (irq >= BAD_IRQ)
+            return 0;
 
-		irq_desc = get_irq_desc_cpu(cpuid, irq);
-		if (unlikely(!irq_desc)) {
-			pr_err("irq is not actived %d\n", irq);
-			irq_chip->irq_eoi(irq);
-			irq_chip->irq_dir(irq);
-			continue;
-		}
+        irq_desc = get_irq_desc_cpu(cpuid, irq);
 
-		do_handle_host_irq(cpuid, irq_desc);
-	}
+        // if (current && task_is_vcpu(current) && irq_source_trace_count++ < 50) {
+        //     pr_notice("IRQ_SOURCE_TRACE: cpu%d current=%s irq=%u desc=%p hno=%u flags=0x%lx handler=%p aff=%d\n",
+        //               cpuid,
+        //               current->name,
+        //               irq,
+        //               irq_desc,
+        //               irq_desc ? irq_desc->hno : 0xffffffff,
+        //               irq_desc ? irq_desc->flags : 0UL,
+        //               irq_desc ? irq_desc->handler : NULL,
+        //               irq_desc ? irq_desc->affinity : -1);
+        // }
 
-	return 0;
+        if (unlikely(!irq_desc)) {
+            pr_err("irq is not actived %d\n", irq);
+            irq_chip->irq_eoi(irq);
+            irq_chip->irq_dir(irq);
+            continue;
+        }
+
+        do_handle_host_irq(cpuid, irq_desc);
+    }
+
+    return 0;
 }
 
 int irq_xlate(struct device_node *node, uint32_t *intspec,

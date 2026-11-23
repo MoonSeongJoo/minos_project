@@ -4,7 +4,7 @@
 // - Reads /demo/frames/frame_XXXX.jpg
 // - Sends the existing hasee_frame_packet_t UDP packet to VM1 Guardian
 //
-// Build target: aarch64 Linux guest binary
+// Build target: aarch64/32 Linux guest binary
 // Required headers: ncnn net.h, stb_image.h, hasee_frame_packet.h
 
 #include <arpa/inet.h>

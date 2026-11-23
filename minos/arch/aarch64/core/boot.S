@@ -58,17 +58,21 @@ _start:
 	/* interrupt disabled mmu/dcache/icache off */
 	msr	daifset, #2
 	b	do_start
-	.quad   0				/* Image load offset from start of RAM */
-        .quad   __code_end - _start		/* reserved */
-        .quad   8				/* kernel flags */
-        .quad   0				/* reserved */
-        .quad   0				/* reserved */
-        .quad   0				/* reserved */
-        .byte   0x41				/* Magic number, "ARM\x64" */
-        .byte   0x52
-        .byte   0x4d
-        .byte   0x64
-        .long   0x0
+    /*
+     * AArch64 Image header for U-Boot booti.
+     * Keep this compatible with the known-good RPi4 prebuilt minos.bin.
+     */
+    .quad   CONFIG_MINOS_ENTRY_ADDRESS      /* Image load offset / Minos load address */
+    .quad   __minos_end - _start            /* Effective image size */
+    .quad   0                               /* kernel flags */
+    .quad   0
+    .quad   0
+    .quad   0
+    .byte   0x41                            /* Magic number, "ARM\x64" */
+    .byte   0x52
+    .byte   0x4d
+    .byte   0x64
+    .long   0x0
 
 do_start:
 	mov	x27, x0				// save the dtb blob to x27

@@ -51,20 +51,92 @@ static char *vm_debug_console_match[] = {
 
 static struct vm_debug_console *dcons[NR_DC];
 
+// static int dcon_putc(struct tty *tty, char ch)
+// {
+// 	struct vm_debug_console *dcon = tty->pdata;
+// 	struct vm_ring *tx = dcon->tx;
+
+// 	if (!dcon->open)
+// 		return 0;
+
+// 	if ((tx->widx - tx->ridx) > tx->size) {
+// 		pr_err("write buffer overflow\n");
+// 		return -EIO;
+// 	}
+
+// 	tx->buf[tx->widx++] = ch;
+// 	mb();
+
+// 	send_virq_to_vm(dcon->vm, dcon->irq);
+
+// 	return 0;
+// }
+
+// static int dcon_putc(struct tty *tty, char ch)
+// {
+//     struct vm_debug_console *dcon = tty->pdata;
+//     struct vm_ring *tx = dcon->tx;
+//     static int putc_trace_count;
+
+//     if (putc_trace_count++ < 10) {
+//         pr_notice("DCON_PUTC_TRACE: ch=0x%x open=%d irq=%d virq_state=%d tx_ridx=%u tx_widx=%u\n",
+//                   ch,
+//                   dcon->open,
+//                   dcon->irq,
+//                   virq_get_state(dcon->vm->vcpus[0], dcon->irq),
+//                   tx->ridx,
+//                   tx->widx);
+//     }
+
+//     if (!dcon->open)
+//         return 0;
+
+//     if ((tx->widx - tx->ridx) > tx->size) {
+//         pr_err("write buffer overflow\n");
+//         return -EIO;
+//     }
+
+//     tx->buf[tx->widx++] = ch;
+//     mb();
+
+//     send_virq_to_vm(dcon->vm, dcon->irq);
+
+//     return 0;
+// }
+
 static int dcon_putc(struct tty *tty, char ch)
 {
 	struct vm_debug_console *dcon = tty->pdata;
 	struct vm_ring *tx = dcon->tx;
+	uint32_t widx;
 
 	if (!dcon->open)
 		return 0;
 
-	if ((tx->widx - tx->ridx) > tx->size) {
-		pr_err("write buffer overflow\n");
-		return -EIO;
-	}
+	/*
+	 * If guest has not enabled debug-console virq yet,
+	 * silently drop input. Do not print per-character trace here.
+	 */
+	if (!virq_get_state(dcon->vm->vcpus[0], dcon->irq))
+		return 0;
 
-	tx->buf[tx->widx++] = ch;
+	widx = tx->widx;
+	mb();
+
+	/*
+	 * Ring full.
+	 *
+	 * Do not pr_notice/pr_err for every pasted character.
+	 * Paste may send hundreds of chars at once and serial console
+	 * logging here can make the system look hung.
+	 */
+	if ((widx - tx->ridx) >= tx->size)
+		return 0;
+
+	tx->buf[VM_RING_IDX(widx, tx->size)] = ch;
+	mb();
+
+	tx->widx = widx + 1;
 	mb();
 
 	send_virq_to_vm(dcon->vm, dcon->irq);
@@ -72,9 +144,19 @@ static int dcon_putc(struct tty *tty, char ch)
 	return 0;
 }
 
+// static int dcon_putcs(struct tty *tty, char *str, int count)
+// {
+// 	return 0;
+// }
+
 static int dcon_putcs(struct tty *tty, char *str, int count)
 {
-	return 0;
+	int i;
+
+	for (i = 0; i < count; i++)
+		dcon_putc(tty, str[i]);
+
+	return count;
 }
 
 static int dcon_open(struct tty *tty)
@@ -148,6 +230,8 @@ static int dcon_init(struct vm *vm, struct device_node *node,
 		return -ENODEV;
 
 	pr_notice("debug_console base: 0x%x\n", va->start);
+	pr_notice("DCON_PATCH_MARK_20260706: debug_console.c applied vm=%d base=0x%lx\n",
+		vm->vmid, va->start);
 
 	dcon->ring_addr = va->start;
 	map_vmm_area(&vm->mm, va, (unsigned long)ring);
@@ -220,27 +304,76 @@ release_tty:
 
 VDEV_DECLARE(vm_debug_console, vm_debug_console_match, create_dconsole);
 
+// static void dcon_write(struct vm_debug_console *dcon)
+// {
+// 	struct vm_ring *ring = dcon->rx;
+// 	uint32_t ridx, widx;
+
+// 	if (!dcon->tty->open) {
+// 		ring->ridx = ring->widx;
+// 		wmb();
+// 		return;
+// 	}
+
+// 	ridx = ring->ridx;
+// 	widx = ring->widx;
+// 	mb();
+
+// 	while (ridx != widx)
+// 		console_putc(ring->buf[VM_RING_IDX(ridx++, ring->size)]);
+
+// 	mb();
+// 	ring->ridx = ring->widx;
+// }
+
 static void dcon_write(struct vm_debug_console *dcon)
 {
-	struct vm_ring *ring = dcon->rx;
-	uint32_t ridx, widx;
+    struct vm_ring *ring = dcon->rx;
+    uint32_t ridx, widx;
 
-	if (!dcon->tty->open) {
-		ring->ridx = ring->widx;
-		wmb();
-		return;
-	}
+    ridx = ring->ridx;
+    widx = ring->widx;
+    mb();
 
-	ridx = ring->ridx;
-	widx = ring->widx;
-	mb();
+    while (ridx != widx)
+        console_putc(ring->buf[VM_RING_IDX(ridx++, ring->size)]);
 
-	while (ridx != widx)
-		console_putc(ring->buf[VM_RING_IDX(ridx++, ring->size)]);
-
-	mb();
-	ring->ridx = ring->widx;
+    mb();
+    ring->ridx = ridx;
 }
+
+// static void dcon_write(struct vm_debug_console *dcon)
+// {
+//     struct vm_ring *ring = dcon->rx;
+//     uint32_t ridx, widx;
+//     static int dcon_write_trace_count;
+
+//     ridx = ring->ridx;
+//     widx = ring->widx;
+//     mb();
+
+//     if (dcon_write_trace_count++ < 200) {
+//         pr_notice("DCON_WRITE_TRACE: vm%d tty_open=%d dcon_open=%d ring_addr=0x%lx ridx=%u widx=%u count=%u\n",
+//                   dcon->vm ? dcon->vm->vmid : -1,
+//                   dcon->tty ? dcon->tty->open : -1,
+//                   dcon->open,
+//                   dcon->ring_addr,
+//                   ridx,
+//                   widx,
+//                   widx - ridx);
+//     }
+
+//     /*
+//      * RPi4 bring-up debug:
+//      * Do not drop guest output even if tty attach is not open yet.
+//      * Print guest console output directly to Minos host console.
+//      */
+//     while (ridx != widx)
+//         console_putc(ring->buf[VM_RING_IDX(ridx++, ring->size)]);
+
+//     mb();
+//     ring->ridx = ring->widx;
+// }
 
 static int dcon_hvc_handler(gp_regs *c, uint32_t id, uint64_t *args)
 {
@@ -272,6 +405,14 @@ static int dcon_hvc_handler(gp_regs *c, uint32_t id, uint64_t *args)
 	case HVC_DC_OPEN:
 		dcon->open = 1;
 		break;
+	// case HVC_DC_OPEN:
+	// 	dcon->open = 1;
+	// 	pr_notice("DCON_OPEN_TRACE: vm%d irq=%d virq_state=%d tty_open=%d\n",
+	// 			  vm->vmid,
+	// 			  dcon->irq,
+	// 			  virq_get_state(vm->vcpus[0], dcon->irq),
+	// 			  dcon->tty ? dcon->tty->open : -1);
+	// 	break;
 	case HVC_DC_CLOSE:
 		dcon->open = 0;
 		break;
@@ -279,5 +420,58 @@ static int dcon_hvc_handler(gp_regs *c, uint32_t id, uint64_t *args)
 
 	HVC_RET1(c, 0);
 }
+
+// static int dcon_hvc_handler(gp_regs *c, uint32_t id, uint64_t *args)
+// {
+//     struct vm *vm = get_current_vm();
+//     struct vm_debug_console *dcon;
+//     static int dcon_hvc_trace_count;
+
+//     dcon = dcons[vm->vmid];
+
+//     if (dcon_hvc_trace_count++ < 200) {
+//         pr_notice("DCON_HVC_TRACE: vm%d id=0x%x dcon=%p ring=0x%lx irq=%u tty_open=%d dcon_open=%d\n",
+//                   vm ? vm->vmid : -1,
+//                   id,
+//                   dcon,
+//                   dcon ? dcon->ring_addr : 0,
+//                   dcon ? dcon->irq : 0,
+//                   dcon && dcon->tty ? dcon->tty->open : -1,
+//                   dcon ? dcon->open : -1);
+//     }
+
+//     if (!dcon)
+//         HVC_RET1(c, 0);
+
+//     switch (id) {
+// 	case HVC_DC_GET_STAT:
+// 		HVC_RET1(c, DCON_TTY_MAGIC | vm->vmid);
+// 		break;
+// 	case HVC_DC_GET_RING:
+// 		HVC_RET1(c, dcon->ring_addr);
+// 		break;
+// 	case HVC_DC_GET_IRQ:
+// 		if (dcon->irq == 0) {
+// 			dcon->irq = alloc_vm_virq(vm);
+// 			if (dcon->irq < 0)
+// 				dcon->irq = 0;
+// 		}
+// 		HVC_RET1(c, dcon->irq);
+// 		break;
+// 	case HVC_DC_WRITE:
+// 		dcon_write(dcon);
+// 		break;
+// 	case HVC_DC_OPEN:
+// 		dcon->open = 1;
+// 		break;
+// 	case HVC_DC_CLOSE:
+// 		dcon->open = 0;
+// 		break;
+// 	}
+
+// 	HVC_RET1(c, 0);
+// }
+
+
 DEFINE_HVC_HANDLER("debug_console_hvc", HVC_TYPE_DEBUG_CONSOLE,
 		HVC_TYPE_DEBUG_CONSOLE, dcon_hvc_handler);

@@ -88,19 +88,93 @@ void psci_system_shutdown_hvc(void)
 
 int spin_table_cpu_on(unsigned long affinity, unsigned long entry)
 {
-	void *addr;
-	int cpu = affinity_to_cpuid(affinity);
+    void *addr;
+    int cpu;
 
-	if (smp_holding_address[cpu] != 0) {
-		addr = io_remap(smp_holding_address[cpu], sizeof(uint64_t));
-		*(unsigned long *)addr = entry;
+    cpu = affinity_to_cpuid(affinity);
 
-		/* flush the cache and send signal to other cpu */
-		flush_dcache_range((unsigned long)addr, PAGE_SIZE);
-		sev();
-		io_unmap((virt_addr_t)addr, sizeof(unsigned long));
-		return 0;
-	}
+    if (cpu < 0 || cpu >= CONFIG_NR_CPUS) {
+        pr_err(
+            "SMP_CPU_ON: invalid affinity=0x%x cpu=%d\n",
+            affinity,
+            cpu);
 
-	return -EINVAL;
+        return -EINVAL;
+    }
+
+    if (smp_holding_address[cpu] == 0) {
+        pr_err(
+            "SMP_CPU_ON: no holding address "
+            "cpu=%d affinity=0x%x\n",
+            cpu,
+            affinity);
+
+        return -EINVAL;
+    }
+
+    pr_notice(
+        "SMP_CPU_ON: cpu=%d affinity=0x%x "
+        "holding=0x%x entry=0x%x\n",
+        cpu,
+        affinity,
+        smp_holding_address[cpu],
+        entry);
+
+    addr = io_remap(
+            smp_holding_address[cpu],
+            sizeof(uint64_t));
+
+    if (!addr) {
+        pr_err(
+            "SMP_CPU_ON: io_remap failed "
+            "cpu=%d holding=0x%x\n",
+            cpu,
+            smp_holding_address[cpu]);
+
+        return -ENOMEM;
+    }
+
+    /*
+     * The secondary core waits for this release entry.
+     */
+    *(volatile uint64_t *)addr = (uint64_t)entry;
+
+    flush_dcache_range(
+        (unsigned long)addr,
+        sizeof(uint64_t));
+
+    dsb();
+    sev();
+
+    pr_notice(
+        "SMP_CPU_ON: release written "
+        "cpu=%d addr=0x%x entry=0x%x\n",
+        cpu,
+        smp_holding_address[cpu],
+        entry);
+
+    io_unmap(
+        (virt_addr_t)addr,
+        sizeof(uint64_t));
+
+    return 0;
 }
+
+// int spin_table_cpu_on(unsigned long affinity, unsigned long entry)
+// {
+// 	void *addr;
+// 	int cpu = affinity_to_cpuid(affinity);
+
+// 	if (smp_holding_address[cpu] != 0) {
+// 		addr = io_remap(smp_holding_address[cpu], sizeof(uint64_t));
+// 		*(unsigned long *)addr = entry;
+
+// 		/* flush the cache and send signal to other cpu */
+// 		flush_dcache_range((unsigned long)addr, PAGE_SIZE);
+// 		sev();
+// 		io_unmap((virt_addr_t)addr, sizeof(unsigned long));
+// 		return 0;
+// 	}
+
+// 	return -EINVAL;
+// }

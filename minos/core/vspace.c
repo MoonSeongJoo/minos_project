@@ -78,19 +78,60 @@ unsigned long translate_va_to_pa(struct vspace *vs, unsigned long va)
 	return addr;
 }
 
-void *io_remap(virt_addr_t vir, size_t size)
+// void *io_remap(virt_addr_t vir, size_t size)
+// {
+// 	size_t new_size;
+// 	unsigned long start, end;
+
+// 	end = PAGE_BALIGN(vir + size);
+// 	start = PAGE_ALIGN(vir);
+// 	new_size = end - vir;
+
+// 	if (!create_host_mapping(start, vir, new_size, VM_IO | VM_RW))
+// 		return (void *)ptov(vir);
+
+// 	return NULL;
+// }
+
+void *io_remap(virt_addr_t phy, size_t size)
 {
-	size_t new_size;
-	unsigned long start, end;
+    size_t map_size;
+    unsigned long start;
+    unsigned long end;
+    int ret;
 
-	end = PAGE_BALIGN(vir + size);
-	start = PAGE_ALIGN(vir);
-	new_size = end - vir;
+    if (size == 0)
+        return NULL;
 
-	if (!create_host_mapping(start, vir, new_size, VM_IO | VM_RW))
-		return (void *)ptov(vir);
+    /*
+     * The mapping request must use page-aligned physical and
+     * virtual base addresses. Return a pointer containing the
+     * original offset within the mapped page.
+     */
+    start = PAGE_ALIGN(phy);
+    end = PAGE_BALIGN(phy + size);
+    map_size = end - start;
 
-	return NULL;
+    ret = create_host_mapping(
+            start,
+            start,
+            map_size,
+            VM_IO | VM_RW);
+
+    if (ret) {
+        pr_err(
+            "io_remap failed phy=0x%x start=0x%x "
+            "size=0x%x map_size=0x%x ret=%d\n",
+            phy,
+            start,
+            size,
+            map_size,
+            ret);
+
+        return NULL;
+    }
+
+    return (void *)ptov(phy);
 }
 
 int io_unmap(virt_addr_t vir, size_t size)

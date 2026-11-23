@@ -141,39 +141,125 @@ int smp_cpu_up(unsigned long cpu, unsigned long entry)
 	return 0;
 }
 
+// void smp_cpus_up(void)
+// {
+// 	int i, ret, cnt;
+// 	uint64_t affinity;
+
+// 	flush_cache_all();
+
+// 	for (i = 1; i < CONFIG_NR_CPUS; i++) {
+// 		cnt = 0;
+// 		affinity = cpuid_to_affinity(i);
+
+// 		ret = smp_cpu_up(affinity, CONFIG_MINOS_ENTRY_ADDRESS);
+// 		if (ret) {
+// 			pr_fatal("failed to bring up cpu-%d\n", i);
+// 			continue;
+// 		}
+// 	}
+
+// 	for (i = 1; i < CONFIG_NR_CPUS; i++) {
+// 		pr_notice("waiting 2 seconds for cpu-%d up\n", i);
+// 		while ((smp_affinity_id[i] == 0) && (cnt < 2000)) {
+// 			mdelay(1);
+// 			cnt++;
+// 		}
+
+
+// 		if (smp_affinity_id[i] == 0) {
+// 			pr_err("cpu-%d is not up with affinity id 0x%p\n",
+// 					i, smp_affinity_id[i]);
+// 		} else {
+// 			cpumask_set_cpu(i, &cpu_online);
+// 		}
+// 	}
+
+// 	cpus_all_up = 1;
+// 	wmb();
+// }
+
 void smp_cpus_up(void)
 {
-	int i, ret, cnt;
+	int i;
+	int ret;
+	int cnt;
 	uint64_t affinity;
 
 	flush_cache_all();
 
+	/*
+	 * Request secondary CPU power-up.
+	 */
 	for (i = 1; i < CONFIG_NR_CPUS; i++) {
-		cnt = 0;
 		affinity = cpuid_to_affinity(i);
 
-		ret = smp_cpu_up(affinity, CONFIG_MINOS_ENTRY_ADDRESS);
+		pr_notice(
+			"SMP_CPU_UP_REQUEST: cpu=%d affinity=0x%lx "
+			"entry=0x%lx\n",
+			i,
+			(unsigned long)affinity,
+			(unsigned long)CONFIG_MINOS_ENTRY_ADDRESS);
+
+		ret = smp_cpu_up(
+			affinity,
+			CONFIG_MINOS_ENTRY_ADDRESS);
+
 		if (ret) {
-			pr_fatal("failed to bring up cpu-%d\n", i);
+			pr_fatal(
+				"failed to bring up cpu-%d ret=%d\n",
+				i,
+				ret);
 			continue;
 		}
 	}
 
+	/*
+	 * Wait independently for each secondary CPU.
+	 *
+	 * cnt must be reset for every CPU. Otherwise time spent
+	 * waiting for CPU1 reduces the timeout available to CPU2
+	 * and CPU3.
+	 */
 	for (i = 1; i < CONFIG_NR_CPUS; i++) {
-		pr_notice("waiting 2 seconds for cpu-%d up\n", i);
-		while ((smp_affinity_id[i] == 0) && (cnt < 2000)) {
+		cnt = 0;
+
+		pr_notice(
+			"waiting 2 seconds for cpu-%d up\n",
+			i);
+
+		while ((smp_affinity_id[i] == 0) &&
+		       (cnt < 2000)) {
 			mdelay(1);
 			cnt++;
 		}
 
 		if (smp_affinity_id[i] == 0) {
-			pr_err("cpu-%d is not up with affinity id 0x%p\n",
-					i, smp_affinity_id[i]);
+			pr_err(
+				"cpu-%d is not up after %d ms, "
+				"affinity_id=0x%lx\n",
+				i,
+				cnt,
+				(unsigned long)smp_affinity_id[i]);
 		} else {
+			pr_notice(
+				"SMP_CPU_UP_DONE: cpu=%d "
+				"affinity_id=0x%lx wait=%d ms\n",
+				i,
+				(unsigned long)smp_affinity_id[i],
+				cnt);
+
 			cpumask_set_cpu(i, &cpu_online);
 		}
 	}
 
+	/*
+	 * Release secondary CPUs waiting in boot_secondary().
+	 *
+	 * This flag must be set even when one secondary CPU failed;
+	 * otherwise successfully started secondary CPUs can remain
+	 * blocked forever in while (!is_cpus_all_up()).
+	 */
 	cpus_all_up = 1;
 	wmb();
 }

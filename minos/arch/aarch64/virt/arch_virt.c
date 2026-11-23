@@ -184,12 +184,39 @@ void arch_vcpu_state_init(struct vcpu *vcpu, void *c)
 	 * RW : low level is 64bit, when 0 is 32 bit
 	 * VM : enable virtualzation
 	 */
-	value = read_sysreg64(HCR_EL2);
-	context->hcr_el2 = value | HCR_EL2_VM |
-		     HCR_EL2_TIDCP | HCR_EL2_IMO | HCR_EL2_FMO |
-		     HCR_EL2_BSU_IS | HCR_EL2_FB | HCR_EL2_PTW |
-		     HCR_EL2_TSC | HCR_EL2_TACR | HCR_EL2_AMO;
 
+	// value = read_sysreg64(HCR_EL2);
+	// context->hcr_el2 = value | HCR_EL2_VM |
+	// 	     HCR_EL2_TIDCP | HCR_EL2_IMO | HCR_EL2_FMO |
+	// 	     HCR_EL2_BSU_IS | HCR_EL2_FB | HCR_EL2_PTW |
+	// 	     HCR_EL2_TSC | HCR_EL2_TACR | HCR_EL2_AMO;
+	
+	
+	/*
+	* RPi4 VM bring-up fix:
+	* Do not inherit current EL2 HCR directly.
+	* Current HCR may contain host/control bits such as TGE/RW/HCD.
+	* For a 32-bit Linux guest, RW must be clear and TGE must be clear.
+	*/
+	value = 0;
+
+	context->hcr_el2 = HCR_EL2_VM |
+			HCR_EL2_TIDCP | HCR_EL2_IMO | HCR_EL2_FMO |
+			HCR_EL2_BSU_IS | HCR_EL2_FB | HCR_EL2_PTW |
+			HCR_EL2_TSC | HCR_EL2_TACR | HCR_EL2_AMO;
+
+	/*
+	* Guest exceptions must be handled as guest exceptions.
+	* If TGE is left set, guest SVC/IRQ/syscall-style exceptions can be routed
+	* incorrectly to EL2.
+	*/
+	context->hcr_el2 &= ~HCR_EL2_TGE;
+
+	/*
+	* Do not disable HVC from guest.
+	* HVC is needed by Minos debug console / hvc console path.
+	*/
+	context->hcr_el2 &= ~HCR_EL2_HCD;
 	/*
 	 * usually there will be so many wfis from the VM
 	 * in some case this will have much infulence to
@@ -198,8 +225,23 @@ void arch_vcpu_state_init(struct vcpu *vcpu, void *c)
 	if (!(vcpu->vm->flags & VM_FLAGS_NATIVE_WFI))
 		context->hcr_el2 |= HCR_EL2_TWI;
 
-	if (!task_is_32bit(vcpu->task))
+	// if (!task_is_32bit(vcpu->task))
+	// 	context->hcr_el2 |= HCR_EL2_RW;
+	
+	if (!task_is_32bit(vcpu->task)) {
 		context->hcr_el2 |= HCR_EL2_RW;
+	} else {
+		context->hcr_el2 &= ~HCR_EL2_RW;
+	}
+
+	pr_notice("HCR_INIT_TRACE: vm%d vcpu%d is32=%d hcr=0x%lx TGE=%d RW=%d HCD=%d\n",
+		vm->vmid,
+		get_vcpu_id(vcpu),
+		task_is_32bit(vcpu->task) ? 1 : 0,
+		context->hcr_el2,
+		!!(context->hcr_el2 & HCR_EL2_TGE),
+		!!(context->hcr_el2 & HCR_EL2_RW),
+		!!(context->hcr_el2 & HCR_EL2_HCD));
 
 	/*
 	 * this require HVM's vcpu affinity need start with 0
@@ -213,10 +255,39 @@ void arch_vcpu_state_init(struct vcpu *vcpu, void *c)
 
 	context->cpacr = 0x3 << 20;
 
-	if (vm_is_native(vcpu->vm))
-		context->vpidr = mpidr_el1[vcpu_affinity(vcpu)];
-	else
-		context->vpidr = 0x410fc050;	/* arm fvp */
+	// if (vm_is_native(vcpu->vm))
+	// 	context->vpidr = mpidr_el1[vcpu_affinity(vcpu)];
+	// else
+	// 	context->vpidr = 0x410fc050;	/* arm fvp */
+	
+	/*
+	* RPi4 bring-up fix:
+	*
+	* VPIDR_EL2 provides the virtual CPU ID seen by the guest as MIDR.
+	* 32-bit ARM Linux head.S uses MIDR to select processor_info.
+	*
+	* Do NOT put MPIDR/affinity into VPIDR.
+	* Put the real host MIDR, or a known Cortex-A72 MIDR fallback.
+	*/
+	if (vm_is_native(vcpu->vm)) {
+		context->vpidr = (uint32_t)read_midr_el1();
+
+		/*
+		* Raspberry Pi 4 uses Cortex-A72.
+		* Typical Cortex-A72 MIDR is 0x410fd083.
+		*/
+		if (!context->vpidr)
+			context->vpidr = 0x410fd083;
+	} else {
+		context->vpidr = 0x410fc050; /* arm fvp */
+	}
+
+	pr_notice("VPIDR_INIT_TRACE: vm%d vcpu%d vpidr=0x%x host_midr=0x%x vmpidr=0x%x\n",
+			vm->vmid,
+			get_vcpu_id(vcpu),
+			(uint32_t)context->vpidr,
+			(uint32_t)read_midr_el1(),
+			(uint32_t)context->vmpidr);
 
 	/*
 	 * enable dc zva trap, the apple soc use zva size 64

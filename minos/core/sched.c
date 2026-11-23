@@ -127,12 +127,23 @@ void pcpu_irqwork(int pcpu_id)
 	send_sgi(CONFIG_MINOS_IRQWORK_IRQ, pcpu_id);
 }
 
+// static int select_task_run_cpu(void)
+// {
+// 	/*
+// 	 * TBD
+// 	 */
+// 	return (NR_CPUS - 1);
+// }
+
 static int select_task_run_cpu(void)
 {
 	/*
-	 * TBD
+	 * RPi4 bring-up 임시 정책:
+	 * 현재 Minos는 CPU0만 확실히 scheduling 되고 있다.
+	 * 원본처럼 NR_CPUS - 1을 리턴하면 init/shell 같은 TASK_AFF_ANY task가
+	 * CPU3에 배치되어 실행되지 않을 수 있다.
 	 */
-	return (NR_CPUS - 1);
+	return 0;
 }
 
 static void percpu_task_ready(struct pcpu *pcpu, struct task *task, int preempt)
