@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect x="0" y="0" width="1280" height="720" fill="#0f172a"/>
+<text x="30" y="45" fill="#f8fafc" font-size="30" font-family="Arial" font-weight="bold" letter-spacing="2">H-A-SEE Runtime Safety Gate Demo</text>
+<text x="30" y="75" fill="#94a3b8" font-size="17" font-family="Arial">VM2 AI output is accepted only while runtime health is safe</text>
+<rect x="930" y="24" width="310" height="44" rx="10" fill="#166534"/>
+<text x="1085" y="53" fill="#ffffff" font-size="20" font-family="Arial" font-weight="bold" text-anchor="middle">AI OUTPUT ACCEPTED</text>
+<rect x="30" y="110" width="720" height="405" fill="#000000" stroke="#94a3b8" stroke-width="2"/>
+<image href="frames/frame_0003.jpg" x="30" y="110" width="720" height="405" preserveAspectRatio="none"/>
+<rect x="30" y="110" width="360" height="28" fill="#020617" fill-opacity="0.55"/>
+<text x="42" y="130" fill="#e5e7eb" font-size="15" font-family="monospace">image: frames/frame_0003.jpg</text>
+<rect x="298" y="259" width="204" height="152" fill="none" stroke="#00ff66" stroke-width="4"/>
+<rect x="298" y="231" width="190" height="26" fill="#00ff66" opacity="0.90"/>
+<text x="304" y="250" fill="#111827" font-size="16" font-family="Arial" font-weight="bold">car 1.00</text>
+<rect x="235" y="302" width="92" height="67" fill="none" stroke="#00ff66" stroke-width="4"/>
+<rect x="235" y="274" width="190" height="26" fill="#00ff66" opacity="0.90"/>
+<text x="241" y="293" fill="#111827" font-size="16" font-family="Arial" font-weight="bold">car 1.00</text>
+<rect x="76" y="307" width="41" height="38" fill="none" stroke="#00ff66" stroke-width="4"/>
+<rect x="76" y="279" width="190" height="26" fill="#00ff66" opacity="0.90"/>
+<text x="82" y="298" fill="#111827" font-size="16" font-family="Arial" font-weight="bold">car 1.00</text>
+<rect x="96" y="316" width="27" height="25" fill="none" stroke="#00ff66" stroke-width="4"/>
+<rect x="96" y="288" width="190" height="26" fill="#00ff66" opacity="0.90"/>
+<text x="102" y="307" fill="#111827" font-size="16" font-family="Arial" font-weight="bold">car 1.00</text>
+<rect x="785" y="110" width="455" height="405" rx="14" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+<text x="811" y="152" fill="#f8fafc" font-size="25" font-family="Arial" font-weight="bold">Guardian Safety Panel</text>
+<rect x="811" y="172" width="403" height="46" rx="9" fill="#16a34a"/>
+<text x="1012" y="202" fill="#ffffff" font-size="21" font-family="Arial" font-weight="bold" text-anchor="middle">AI OUTPUT ACCEPTED</text>
+<text x="815" y="245" fill="#cbd5e1" font-size="16" font-family="Arial">Active Control Path</text>
+<text x="815" y="270" fill="#ffffff" font-size="19" font-family="Arial" font-weight="bold">VM2 AI DOMAIN</text>
+<text x="815" y="305" fill="#cbd5e1" font-size="16" font-family="Arial">VM2 Output Gate</text>
+<text x="815" y="330" fill="#ffffff" font-size="19" font-family="Arial" font-weight="bold">OPEN</text>
+<text x="1030" y="305" fill="#cbd5e1" font-size="16" font-family="Arial">Fallback Mode</text>
+<text x="1030" y="330" fill="#ffffff" font-size="19" font-family="Arial" font-weight="bold">STANDBY</text>
+<text x="815" y="375" fill="#cbd5e1" font-size="15" font-family="Arial" font-weight="bold">AI Control Authority</text>
+<text x="1210" y="375" fill="#e5e7eb" font-size="15" font-family="Arial" font-weight="bold" text-anchor="end">100%</text>
+<rect x="815" y="385" width="395" height="14" rx="7" fill="#334155"/>
+<rect x="815" y="385" width="395" height="14" rx="7" fill="#22c55e"/>
+<text x="815" y="435" fill="#cbd5e1" font-size="15" font-family="Arial" font-weight="bold">Fallback Authority</text>
+<text x="1210" y="435" fill="#e5e7eb" font-size="15" font-family="Arial" font-weight="bold" text-anchor="end">0%</text>
+<rect x="815" y="445" width="395" height="14" rx="7" fill="#334155"/>
+<rect x="815" y="445" width="0" height="14" rx="7" fill="#38bdf8"/>
+<text x="815" y="490" fill="#94a3b8" font-size="13" font-family="monospace">seq=3 frame=3 objs=4 bad=0 good=4</text>
+<text x="815" y="510" fill="#94a3b8" font-size="13" font-family="monospace">uncertainty=0.12 latency=23ms health=OK</text>
+<text x="815" y="533" fill="#cbd5e1" font-size="13" font-family="Arial" font-weight="bold">Risk: No risk detected</text>
+<rect x="30" y="545" width="1210" height="145" rx="16" fill="#111827" stroke="#334155" stroke-width="2"/>
+<text x="54" y="577" fill="#e5e7eb" font-size="20" font-family="Arial" font-weight="bold">Runtime Safety Path</text>
+<text x="54" y="599" fill="#94a3b8" font-size="13" font-family="Arial">AI output is accepted only while runtime health is safe</text>
+<rect x="54" y="621" width="170" height="42" rx="9" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="139" y="647" fill="#e5e7eb" font-size="16" font-family="Arial" font-weight="bold" text-anchor="middle">VM2 AI DOMAIN</text>
+<line x1="230" y1="642" x2="420" y2="642" stroke="#22c55e" stroke-width="7" stroke-linecap="round"/>
+<rect x="430" y="621" width="220" height="42" rx="9" fill="#166534" stroke="#e5e7eb" stroke-width="1.5"/>
+<text x="540" y="647" fill="#ffffff" font-size="16" font-family="Arial" font-weight="bold" text-anchor="middle">OUTPUT GATE: OPEN</text>
+<line x1="660" y1="642" x2="845" y2="642" stroke="#22c55e" stroke-width="7" stroke-linecap="round"/>
+<rect x="855" y="621" width="190" height="42" rx="9" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="950" y="647" fill="#e5e7eb" font-size="16" font-family="Arial" font-weight="bold" text-anchor="middle">CONTROL PATH</text>
+<rect x="1060" y="621" width="160" height="42" rx="9" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1140" y="647" fill="#ffffff" font-size="15" font-family="Arial" font-weight="bold" text-anchor="middle">VM1 FALLBACK</text>
+<text x="1140" y="677" fill="#94a3b8" font-size="13" font-family="Arial" font-weight="bold" text-anchor="middle">STANDBY</text>
+</svg>

@@ -1,0 +1,522 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>nuScenes BBox Verification</title>
+<style>
+body { background:#111827; color:white; font-family:Arial; margin:20px; }
+h1 { font-size:28px; }
+.grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:20px; }
+.card { background:#1f2937; padding:12px; border-radius:10px; }
+img { width:100%; border:1px solid #94a3b8; }
+.name { margin:8px 0; color:#cbd5e1; }
+</style>
+</head>
+<body>
+<h1>nuScenes GT 2D BBox Verification</h1>
+<p>Red boxes indicate invalid or suspicious coordinates.</p>
+<div class="grid">
+
+<div class="card">
+  <div class="name">frame_0000_overlay.jpg</div>
+  <img src="overlay/frame_0000_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0001_overlay.jpg</div>
+  <img src="overlay/frame_0001_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0002_overlay.jpg</div>
+  <img src="overlay/frame_0002_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0003_overlay.jpg</div>
+  <img src="overlay/frame_0003_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0004_overlay.jpg</div>
+  <img src="overlay/frame_0004_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0005_overlay.jpg</div>
+  <img src="overlay/frame_0005_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0006_overlay.jpg</div>
+  <img src="overlay/frame_0006_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0007_overlay.jpg</div>
+  <img src="overlay/frame_0007_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0008_overlay.jpg</div>
+  <img src="overlay/frame_0008_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0009_overlay.jpg</div>
+  <img src="overlay/frame_0009_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0010_overlay.jpg</div>
+  <img src="overlay/frame_0010_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0011_overlay.jpg</div>
+  <img src="overlay/frame_0011_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0012_overlay.jpg</div>
+  <img src="overlay/frame_0012_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0013_overlay.jpg</div>
+  <img src="overlay/frame_0013_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0014_overlay.jpg</div>
+  <img src="overlay/frame_0014_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0015_overlay.jpg</div>
+  <img src="overlay/frame_0015_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0016_overlay.jpg</div>
+  <img src="overlay/frame_0016_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0017_overlay.jpg</div>
+  <img src="overlay/frame_0017_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0018_overlay.jpg</div>
+  <img src="overlay/frame_0018_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0019_overlay.jpg</div>
+  <img src="overlay/frame_0019_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0020_overlay.jpg</div>
+  <img src="overlay/frame_0020_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0021_overlay.jpg</div>
+  <img src="overlay/frame_0021_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0022_overlay.jpg</div>
+  <img src="overlay/frame_0022_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0023_overlay.jpg</div>
+  <img src="overlay/frame_0023_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0024_overlay.jpg</div>
+  <img src="overlay/frame_0024_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0025_overlay.jpg</div>
+  <img src="overlay/frame_0025_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0026_overlay.jpg</div>
+  <img src="overlay/frame_0026_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0027_overlay.jpg</div>
+  <img src="overlay/frame_0027_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0028_overlay.jpg</div>
+  <img src="overlay/frame_0028_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0029_overlay.jpg</div>
+  <img src="overlay/frame_0029_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0030_overlay.jpg</div>
+  <img src="overlay/frame_0030_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0031_overlay.jpg</div>
+  <img src="overlay/frame_0031_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0032_overlay.jpg</div>
+  <img src="overlay/frame_0032_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0033_overlay.jpg</div>
+  <img src="overlay/frame_0033_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0034_overlay.jpg</div>
+  <img src="overlay/frame_0034_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0035_overlay.jpg</div>
+  <img src="overlay/frame_0035_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0036_overlay.jpg</div>
+  <img src="overlay/frame_0036_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0037_overlay.jpg</div>
+  <img src="overlay/frame_0037_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0038_overlay.jpg</div>
+  <img src="overlay/frame_0038_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0039_overlay.jpg</div>
+  <img src="overlay/frame_0039_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0040_overlay.jpg</div>
+  <img src="overlay/frame_0040_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0041_overlay.jpg</div>
+  <img src="overlay/frame_0041_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0042_overlay.jpg</div>
+  <img src="overlay/frame_0042_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0043_overlay.jpg</div>
+  <img src="overlay/frame_0043_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0044_overlay.jpg</div>
+  <img src="overlay/frame_0044_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0045_overlay.jpg</div>
+  <img src="overlay/frame_0045_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0046_overlay.jpg</div>
+  <img src="overlay/frame_0046_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0047_overlay.jpg</div>
+  <img src="overlay/frame_0047_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0048_overlay.jpg</div>
+  <img src="overlay/frame_0048_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0049_overlay.jpg</div>
+  <img src="overlay/frame_0049_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0050_overlay.jpg</div>
+  <img src="overlay/frame_0050_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0051_overlay.jpg</div>
+  <img src="overlay/frame_0051_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0052_overlay.jpg</div>
+  <img src="overlay/frame_0052_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0053_overlay.jpg</div>
+  <img src="overlay/frame_0053_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0054_overlay.jpg</div>
+  <img src="overlay/frame_0054_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0055_overlay.jpg</div>
+  <img src="overlay/frame_0055_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0056_overlay.jpg</div>
+  <img src="overlay/frame_0056_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0057_overlay.jpg</div>
+  <img src="overlay/frame_0057_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0058_overlay.jpg</div>
+  <img src="overlay/frame_0058_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0059_overlay.jpg</div>
+  <img src="overlay/frame_0059_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0060_overlay.jpg</div>
+  <img src="overlay/frame_0060_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0061_overlay.jpg</div>
+  <img src="overlay/frame_0061_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0062_overlay.jpg</div>
+  <img src="overlay/frame_0062_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0063_overlay.jpg</div>
+  <img src="overlay/frame_0063_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0064_overlay.jpg</div>
+  <img src="overlay/frame_0064_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0065_overlay.jpg</div>
+  <img src="overlay/frame_0065_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0066_overlay.jpg</div>
+  <img src="overlay/frame_0066_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0067_overlay.jpg</div>
+  <img src="overlay/frame_0067_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0068_overlay.jpg</div>
+  <img src="overlay/frame_0068_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0069_overlay.jpg</div>
+  <img src="overlay/frame_0069_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0070_overlay.jpg</div>
+  <img src="overlay/frame_0070_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0071_overlay.jpg</div>
+  <img src="overlay/frame_0071_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0072_overlay.jpg</div>
+  <img src="overlay/frame_0072_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0073_overlay.jpg</div>
+  <img src="overlay/frame_0073_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0074_overlay.jpg</div>
+  <img src="overlay/frame_0074_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0075_overlay.jpg</div>
+  <img src="overlay/frame_0075_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0076_overlay.jpg</div>
+  <img src="overlay/frame_0076_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0077_overlay.jpg</div>
+  <img src="overlay/frame_0077_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0078_overlay.jpg</div>
+  <img src="overlay/frame_0078_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0079_overlay.jpg</div>
+  <img src="overlay/frame_0079_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0080_overlay.jpg</div>
+  <img src="overlay/frame_0080_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0081_overlay.jpg</div>
+  <img src="overlay/frame_0081_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0082_overlay.jpg</div>
+  <img src="overlay/frame_0082_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0083_overlay.jpg</div>
+  <img src="overlay/frame_0083_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0084_overlay.jpg</div>
+  <img src="overlay/frame_0084_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0085_overlay.jpg</div>
+  <img src="overlay/frame_0085_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0086_overlay.jpg</div>
+  <img src="overlay/frame_0086_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0087_overlay.jpg</div>
+  <img src="overlay/frame_0087_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0088_overlay.jpg</div>
+  <img src="overlay/frame_0088_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0089_overlay.jpg</div>
+  <img src="overlay/frame_0089_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0090_overlay.jpg</div>
+  <img src="overlay/frame_0090_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0091_overlay.jpg</div>
+  <img src="overlay/frame_0091_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0092_overlay.jpg</div>
+  <img src="overlay/frame_0092_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0093_overlay.jpg</div>
+  <img src="overlay/frame_0093_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0094_overlay.jpg</div>
+  <img src="overlay/frame_0094_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0095_overlay.jpg</div>
+  <img src="overlay/frame_0095_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0096_overlay.jpg</div>
+  <img src="overlay/frame_0096_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0097_overlay.jpg</div>
+  <img src="overlay/frame_0097_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0098_overlay.jpg</div>
+  <img src="overlay/frame_0098_overlay.jpg">
+</div>
+
+<div class="card">
+  <div class="name">frame_0099_overlay.jpg</div>
+  <img src="overlay/frame_0099_overlay.jpg">
+</div>
+
+</div>
+</body>
+</html>

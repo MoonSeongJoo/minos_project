@@ -1,5 +1,5 @@
 # Exclude heavy directories
-/demo/
+# /demo/
 /linux-4.19.238/
 /ncnn/
 /sdboot/
@@ -85,3 +85,19 @@ __pycache__/
 # Local editor / environment files
 .env
 .env.*
+
+# =====================================
+# H-A-SEE AI Application
+# =====================================
+
+# ARM build output
+ai_model_vm2/build-armhf/
+
+# Compiled executables
+ai_model_vm2/ai_infer_tx
+ai_model_vm2/guardian_frame_viz
+ai_model_vm2/udp_echo_server
+ai_model_vm2/udp_rtt_client
+
+# AI weights (keep metadata and labels)
+ai_model_vm2/model/*.bin
